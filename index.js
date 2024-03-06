@@ -104,7 +104,7 @@ app.get('/me', auth, (req, res) => {
 })
 // Log out Route 
 app.post('/logout', (req, res) => {
-  res.clearCookie('token', { maxAge: 0 }).send({ success: true })
+  res.clearCookie('token').send({ success: true })
 })
 
 io.on('connection', (socket) => {
@@ -147,10 +147,8 @@ app.post('/message', async (req, res) => {
     if (req.files.photo) {
       req.body.image = await fileUp(req.files.photo.path);
     }
-    console.log(req.body);
     const conversation = await conversationCollection.insertOne(req.body);
     const message = await conversationCollection.findOne({ _id: conversation.insertedId });
-    console.log(message);
     io.to(message.roomId).emit('message', message);
     return res.status(200).send('ok');
   }
@@ -184,7 +182,6 @@ app.get('/message/:roomId', async (req, res) => {
   return res.status(200).send(result)
 })
 
-
 app.get('/photo/:fileName', (req, res) => {
   const fileName = req.params.fileName;
   const imagePath = path.join(process.cwd(), 'files', fileName);
@@ -192,7 +189,6 @@ app.get('/photo/:fileName', (req, res) => {
   if (fs.existsSync(imagePath)) return res.sendFile(imagePath);
   res.send("Not Found")
 });
-
 
 server.listen(PORT, () => {
   console.log('=> Server running on', PORT);
